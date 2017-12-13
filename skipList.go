@@ -32,3 +32,47 @@ type SkipList struct {
 	length   int
 	MaxLevel int
 }
+
+func (s *SkipList) Len() int {
+	return s.length
+}
+
+type Iterator interface {
+	Next() (ok bool)
+	Previous() (ok bool)
+	Key() interface{}
+	Value() interface{}
+	Seek(key interface{}) (ok bool)
+	Close()
+}
+
+type iter struct {
+	current *node
+	list    *SkipList
+	key     interface{}
+	value   interface{}
+}
+
+func (i iter) Key() interface{} {
+	return i.key
+}
+
+func (i iter) Value() interface{} {
+	return i.value
+}
+
+func (i *iter) Next() (ok bool) {
+
+}
+
+func (i *iter) Previous() (ok bool) {
+
+}
+
+func (i *iter) Seek(key interface{}) (ok bool) {
+
+}
+
+func (i *iter) Close() {
+
+}
