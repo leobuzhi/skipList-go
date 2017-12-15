@@ -2,7 +2,6 @@ package skiplist
 
 import (
 	"math/rand"
-	"fmt"
 )
 
 const (
@@ -32,7 +31,7 @@ func (n *node) hasNext() bool {
 }
 
 func (n *node) hasPrevious() bool {
-	return n.backword != nil
+	return n.previous() != nil
 }
 
 type SkipList struct {
@@ -85,6 +84,7 @@ func (i *iter) Next() (ok bool) {
 	i.current = i.current.next()
 	i.key = i.current.key
 	i.value = i.current.value
+
 	return true
 }
 
@@ -96,6 +96,7 @@ func (i *iter) Previous() (ok bool) {
 	i.current = i.current.previous()
 	i.key = i.current.key
 	i.value = i.current.value
+
 	return true
 }
 
@@ -231,12 +232,6 @@ func (s *SkipList) GetGreaterOrEqual(min interface{}) (actualKey, value interfac
 func (s *SkipList) Get(key interface{}) (value interface{}, ok bool) {
 	candidate := s.getPath(s.header, nil, key)
 	if candidate == nil || candidate.key != key {
-		if candidate == nil {
-			fmt.Println("candidate == nil")
-		} else {
-			fmt.Println("key  :", candidate.key)
-		}
-
 		return nil, false
 	}
 	return candidate.value, true
@@ -350,4 +345,79 @@ func NewIntMap() *SkipList {
 	return NewCustomMap(func(left, right interface{}) bool {
 		return left.(int) < right.(int)
 	})
+}
+
+func MewStringMap() *SkipList {
+	return NewCustomMap(func(left, right interface{}) bool {
+		return left.(string) < right.(string)
+	})
+}
+
+type rangeIterator struct {
+	iter
+	upperLimit interface{}
+	lowerLimit interface{}
+}
+
+func (i *rangeIterator) Next() bool {
+	if !i.current.hasNext() {
+		return false
+	}
+
+	next := i.current.next()
+
+	if !i.list.lessThan(next.key, i.upperLimit) {
+		return false
+	}
+
+	i.current = i.current.next()
+	i.key = i.current.key
+	i.value = i.current.value
+
+	return true
+}
+
+func (i *rangeIterator) Previous() bool {
+	if !i.current.hasPrevious() {
+		return false
+	}
+
+	previous := i.current.previous()
+	if i.list.lessThan(previous.key, i.lowerLimit) {
+		return false
+	}
+
+	i.current = i.current.previous()
+	i.key = i.current.key
+	i.value = i.current.value
+
+	return true
+}
+
+func (i *rangeIterator) Seek(key interface{}) (ok bool) {
+	if i.list.lessThan(key, i.lowerLimit) || !i.list.lessThan(key, i.upperLimit) {
+		return false
+	}
+	return i.iter.Seek(key)
+}
+
+func (i *rangeIterator) Close() {
+	i.iter.Close()
+	i.upperLimit = nil
+	i.lowerLimit = nil
+}
+
+func (s *SkipList) Range(from, to interface{}) Iterator {
+	start := s.getPath(s.header, nil, from)
+	return &rangeIterator{
+		iter: iter{
+			current: &node{
+				forward:  []*node{start},
+				backword: start,
+			},
+			list: s,
+		},
+		upperLimit: to,
+		lowerLimit: from,
+	}
 }
