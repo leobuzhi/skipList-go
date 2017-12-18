@@ -118,3 +118,24 @@ func TestGetGreatOrEqual(t *testing.T) {
 		t.Errorf("GetGreaterOrEqual error")
 	}
 }
+
+func TestSet(t *testing.T) {
+	s := NewIntMap()
+	if !assertEqual(0, s.Len()) {
+		t.Errorf("len is not 0 ,set error")
+	}
+
+	s.Set(0, 0)
+	s.Set(1, 1)
+	if !assertEqual(2, s.Len()) {
+		t.Errorf("len is not 0 ,set error")
+	}
+
+	if value, ok := s.Get(0); !(assertEqual(0, value) && ok) {
+		t.Errorf("set error")
+	}
+
+	if value, ok := s.Get(1); !(assertEqual(1, value) && ok) {
+		t.Errorf("set error")
+	}
+}
