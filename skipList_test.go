@@ -139,3 +139,66 @@ func TestSet(t *testing.T) {
 		t.Errorf("set error")
 	}
 }
+
+func TestSetAgain(t *testing.T) {
+	s := NewIntMap()
+	s.Set(0, 0)
+	s.Set(1, 1)
+	s.Set(2, 2)
+
+	s.Set(0, 6)
+	if value, ok := s.Get(0); !(assertEqual(6, value) && ok) {
+		t.Errorf("set error")
+	}
+
+	s.Set(1, 9)
+	if value, ok := s.Get(1); !(assertEqual(9, value) && ok) {
+		t.Errorf("set error")
+	}
+}
+
+func TestDelete(t *testing.T) {
+	s := NewIntMap()
+	for i := 0; i != 100; i++ {
+		s.Set(i, i)
+	}
+	for i := 0; i != 100; i += 2 {
+		s.Delete(i)
+	}
+
+	for i := 0; i != 100; i += 2 {
+		if _, ok := s.Get(i); ok {
+			t.Errorf("delete error")
+		}
+	}
+
+	if value, ok := s.Delete(1000); value != nil || ok {
+		t.Errorf("delete error")
+	}
+}
+
+func TestLen(t *testing.T) {
+	s := NewIntMap()
+
+	for i := 0; i != 10; i++ {
+		s.Set(i, i)
+	}
+
+	if !assertEqual(10, s.Len()) {
+		t.Errorf("len error")
+	}
+
+	for i:=0;i!=5;i++{
+		s.Delete(i)
+	}
+
+	if !assertEqual(5, s.Len()) {
+		t.Errorf("len error")
+	}
+
+	s.Delete(1000)
+
+	if !assertEqual(5, s.Len()) {
+		t.Errorf("len error")
+	}
+}
