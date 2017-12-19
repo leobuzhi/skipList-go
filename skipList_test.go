@@ -3,6 +3,7 @@ package skiplist
 import (
 	"fmt"
 	"testing"
+	"math/rand"
 )
 
 func (s *SkipList) print() {
@@ -188,7 +189,7 @@ func TestLen(t *testing.T) {
 		t.Errorf("len error")
 	}
 
-	for i:=0;i!=5;i++{
+	for i := 0; i != 5; i++ {
 		s.Delete(i)
 	}
 
@@ -201,4 +202,187 @@ func TestLen(t *testing.T) {
 	if !assertEqual(5, s.Len()) {
 		t.Errorf("len error")
 	}
+}
+
+func TestIteration(t *testing.T) {
+	s := NewIntMap()
+	for i := 0; i != 20; i++ {
+		s.Set(i, i)
+	}
+
+	seen := 0
+	var lastKey int
+
+	i := s.Iterator()
+	defer i.Close()
+
+	for i.Next() {
+		seen++
+		lastKey = i.Key().(int)
+		if i.Key() != i.Value() {
+			t.Errorf("iterator error")
+		}
+	}
+
+	if seen != s.Len() {
+		t.Errorf("iterator len error")
+	}
+
+	for i.Previous() {
+		if i.Key() != i.Value() {
+			t.Errorf("iterator wrong key value")
+		}
+
+		if i.Key().(int) >= lastKey {
+			t.Errorf("iterator wrong key value")
+		}
+
+		lastKey = i.Key().(int)
+	}
+
+	if lastKey != 0 {
+		t.Errorf("iterator wrong key value")
+	}
+}
+
+func TestRangeIteration(t *testing.T) {
+	s := NewIntMap()
+	for i := 0; i != 20; i++ {
+		s.Set(i, i)
+	}
+
+	max, min := 0, 1000
+
+	var lastKey, seen int
+
+	i := s.Range(5, 10)
+	defer i.Close()
+
+	for i.Next() {
+		seen++
+		lastKey = i.Key().(int)
+		if lastKey > max {
+			max = lastKey
+		}
+
+		if lastKey < min {
+			min = lastKey
+		}
+
+		if i.Key() != i.Value() {
+			t.Errorf("range iteraotr error")
+		}
+	}
+
+	if seen != 5 {
+		t.Errorf("range iteraotr error,error seen")
+	}
+
+	if min != 5 {
+		t.Errorf("range iteraotr error,error min")
+	}
+
+	if max != 9 {
+		t.Errorf("range iteraotr error,error max")
+	}
+
+	if i.Seek(4) {
+		t.Errorf("range iteraotr error,invalid range")
+	}
+
+	if !i.Seek(5) {
+		t.Errorf("range iteraotr error,not seek")
+	}
+
+	if i.Key().(int) != 5 || i.Value().(int) != 5 {
+		t.Errorf("range iteraotr error,key value error")
+	}
+
+	if i.Seek(10) {
+		t.Errorf("range iteraotr error,invalid range")
+	}
+}
+
+func TestInsert(t *testing.T) {
+	s := NewIntMap()
+	inertions := []int{4, 3, 5, 1, 9, 2, 7}
+
+	for _, v := range inertions {
+		s.Set(v, v)
+	}
+
+	for _, v := range inertions {
+		if k, v := s.Get(v); assertEqual(k, v) {
+			t.Errorf("insert error")
+		}
+	}
+}
+
+func makeList(n int) *SkipList {
+	s := NewIntMap()
+	for i := 0; i != n; i++ {
+		k := rand.Int()
+		s.Set(k, k)
+	}
+	return s
+}
+
+func TestOrder(t *testing.T) {
+	s := NewIntMap()
+
+	for i := 0; i < 10000; i++ {
+		r := rand.Int()
+		s.Set(r, r)
+	}
+
+	last := 0
+
+	i := s.Iterator()
+	defer i.Close()
+
+	for i.Next() {
+		if last != 0 && i.Key().(int) < last {
+			t.Errorf("error order")
+		}
+		last = i.Key().(int)
+	}
+
+	for i.Previous() {
+		if i.Key().(int) > last {
+			t.Errorf("error order")
+		}
+		last = i.Key().(int)
+	}
+}
+
+func LookupBenchmark(b *testing.B) {
+	b.StopTimer()
+	s := makeList(1000)
+	b.StartTimer()
+	for i := 0; i != b.N; i++ {
+		s.Get(i)
+	}
+}
+
+func SetBenchmark(b *testing.B) {
+	b.StopTimer()
+	var values []int
+	for i := 0; i != b.N; i++ {
+		values = append(values, rand.Int())
+	}
+
+	s := NewIntMap()
+	b.StartTimer()
+	for i := 0; i != b.N; i++ {
+		s.Set(values[i], values[i])
+	}
+
+}
+
+func BenchmarkSet(b *testing.B) {
+	SetBenchmark(b)
+}
+
+func BenchmarkGet(b *testing.B) {
+	LookupBenchmark(b)
 }
