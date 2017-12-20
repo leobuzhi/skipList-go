@@ -215,9 +215,9 @@ func (s *SkipList) effectiveMaxLevel() int {
 }
 
 func (s SkipList) randomLevel() (n int) {
-	for n := 0; n < s.effectiveMaxLevel() && rand.Float64() < p; n++ {
+	for n = 0; n < s.effectiveMaxLevel() && rand.Float64() < p; n++ {
 	}
-	return
+	return n
 }
 
 func (s *SkipList) GetGreaterOrEqual(min interface{}) (actualKey, value interface{}, ok bool) {

@@ -10,22 +10,33 @@ func (s *SkipList) print() {
 	fmt.Println("header:")
 	for i, link := range s.header.forward {
 		if link != nil {
-			fmt.Println("\t%d : -> %v\n ", i, link.key)
+			fmt.Printf("\t%d: -> %v\n", i, link.key)
 		} else {
-			fmt.Println("\t%d : -> END\n", i)
+			fmt.Printf("\t%d : -> END\n", i)
 		}
 	}
 
 	for node := s.header.next(); node != nil; node = node.next() {
-		fmt.Println("%v: %v (level %d)", node.key, node.value, len(node.forward))
+		fmt.Printf("%v: %v (level %d)\n", node.key, node.value, len(node.forward))
 		for i, link := range node.forward {
 			if link != nil {
-				fmt.Println("\t%d: -> %v", i, link.value)
+				fmt.Printf("\t%d: -> %v\n", i, link.value)
 			} else {
-				fmt.Println("\t%d: -> END", i)
+				fmt.Printf("\t%d: -> END\n", i)
 			}
 		}
 	}
+	fmt.Println()
+}
+
+func TestPrint(t *testing.T) {
+	intMap := NewIntMap()
+
+	for i := 0; i != 50; i++ {
+		v := rand.Int()
+		intMap.Set(v, v)
+	}
+	intMap.print()
 }
 
 func TestInit(t *testing.T) {
