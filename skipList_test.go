@@ -32,8 +32,8 @@ func (s *SkipList) print() {
 func TestPrint(t *testing.T) {
 	intMap := NewIntMap()
 
-	for i := 0; i != 50; i++ {
-		v := rand.Int()
+	for i := 0; i != 20; i++ {
+		v := rand.Int() % 100
 		intMap.Set(v, v)
 	}
 	intMap.print()

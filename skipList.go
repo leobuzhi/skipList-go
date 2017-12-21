@@ -11,7 +11,7 @@ const (
 
 type node struct {
 	forward    []*node
-	backword   *node
+	backward   *node
 	key, value interface{}
 }
 
@@ -23,7 +23,7 @@ func (n *node) next() *node {
 }
 
 func (n *node) previous() *node {
-	return n.backword
+	return n.backward
 }
 
 func (n *node) hasNext() bool {
@@ -112,10 +112,10 @@ func (i *iter) Seek(key interface{}) (ok bool) {
 		current = list.header
 	}
 
-	if current.backword == nil {
+	if current.backward == nil {
 		current = list.header
 	} else {
-		current = current.backword
+		current = current.backward
 	}
 
 	current = list.getPath(current, nil, key)
@@ -266,7 +266,7 @@ func (s *SkipList) Set(key, value interface{}) {
 	}
 
 	if previous := update[0]; previous.key != nil {
-		newNode.backword = previous
+		newNode.backward = previous
 	}
 
 	for i := 0; i <= newLevel; i++ {
@@ -277,8 +277,8 @@ func (s *SkipList) Set(key, value interface{}) {
 	s.length++
 
 	if newNode.forward[0] != nil {
-		if newNode.forward[0].backword != newNode {
-			newNode.forward[0].backword = newNode
+		if newNode.forward[0].backward != newNode {
+			newNode.forward[0].backward = newNode
 		}
 	}
 
@@ -298,14 +298,14 @@ func (s *SkipList) Delete(key interface{}) (value interface{}, ok bool) {
 		return nil, false
 	}
 
-	previous := candidate.backword
+	previous := candidate.backward
 	if s.footer == candidate {
 		s.footer = previous
 	}
 
 	next := candidate.next()
 	if next != nil {
-		next.backword = previous
+		next.backward = previous
 	}
 
 	for i := 0; i <= s.level() && update[i].forward[i] == candidate; i++ {
@@ -413,7 +413,7 @@ func (s *SkipList) Range(from, to interface{}) Iterator {
 		iter: iter{
 			current: &node{
 				forward:  []*node{start},
-				backword: start,
+				backward: start,
 			},
 			list: s,
 		},
