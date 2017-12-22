@@ -55,7 +55,7 @@ type Iterator interface {
 	Key() interface{}
 	//返回当前节点的value
 	Value() interface{}
-
+	//迭代器移至某个key的位置
 	Seek(key interface{}) (ok bool)
 	//关闭迭代器并回收资源，不是必要的，但对GC有好处
 	Close()
